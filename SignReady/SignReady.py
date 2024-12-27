@@ -124,3 +124,5 @@ output_folder = "./procesados"
 error_folder = "./errores"
 
 process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder)
+
+
