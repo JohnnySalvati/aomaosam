@@ -4,7 +4,6 @@ import re
 import os
 import shutil
 
-
 def empty_folder(folder_path):
     """Empty the folder by deleting all its contents."""
     for item in os.listdir(folder_path):
@@ -94,16 +93,6 @@ def extract_information(decrypted_path, output_folder, error_folder):
     return output_path
 
 def process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder):
-    # Ensure all folders exist
-    os.makedirs(decrypted_folder, exist_ok=True)
-    os.makedirs(output_folder, exist_ok=True)
-    os.makedirs(error_folder, exist_ok=True)
-    os.makedirs(input_folder, exist_ok=True)
-
-    # Empty the folders
-    empty_folder(decrypted_folder)
-    empty_folder(output_folder)
-    empty_folder(error_folder)
 
     # Loop through each file in the input directory
     for filename in os.listdir(input_folder):
@@ -114,15 +103,39 @@ def process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder
             # Step 1: Decrypt the PDF and save to decrypted folder
             decrypted_path = decrypt_pdf(input_path, decrypted_folder)
             if decrypted_path:
-                # Step 2: Extract information and save to output folder
+                # Step 2: Extract information and save to outpcd ut folder
                 extract_information(decrypted_path, output_folder, error_folder)
 
-# Example usage
-input_folder = "./para procesar"
-decrypted_folder = "./desencriptados"
-output_folder = "./procesados"
-error_folder = "./errores"
+
+#  * * * * * * * * * * * * * * * *
+#
+#
+#root_path = "G:\Mi unidad\Capacitacion\InSoft\AOMAOSAM\SignReady" # NEED  TO BE CHANGED DEPENDING ON ENVIRONMENT
+root_path = "z:\Contaduria\InSoft\SignReady"
+
+
+input_folder = os.path.join(root_path, "para procesar")
+input_subfolders = [item for item in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, item))] # fill input_subfolders list
+decrypted_folder = os.path.join(root_path, "desencriptados")
+output_folder = os.path.join(root_path, "procesados")
+error_folder = os.path.join(root_path, "errores")
+
+# Ensure all folders exist
+os.makedirs(decrypted_folder, exist_ok=True)
+os.makedirs(output_folder, exist_ok=True)
+os.makedirs(error_folder, exist_ok=True)
+os.makedirs(input_folder, exist_ok=True)
+
+# Empty the folders
+empty_folder(decrypted_folder)
+empty_folder(output_folder)
+empty_folder(error_folder)
+
+for item in input_subfolders:
+    os.makedirs(os.path.join(output_folder, item), exist_ok=True)
+
 
 process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder)
 
-
+for item in input_subfolders:
+    process_all_pdfs(os.path.join(input_folder, item), decrypted_folder, os.path.join(output_folder, item), error_folder)
