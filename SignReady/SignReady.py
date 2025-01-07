@@ -3,6 +3,8 @@ import pdfplumber
 import re
 import os
 import shutil
+import tkinter as tk
+from tkinter import ttk
 
 def empty_folder(folder_path):
     """Empty the folder by deleting all its contents."""
@@ -92,7 +94,7 @@ def extract_information(decrypted_path, output_folder, error_folder):
 
     return output_path
 
-def process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder):
+def process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder, progress_bar, total_files, processed_files):
 
     # Loop through each file in the input directory
     for filename in os.listdir(input_folder):
@@ -105,37 +107,64 @@ def process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder
             if decrypted_path:
                 # Step 2: Extract information and save to outpcd ut folder
                 extract_information(decrypted_path, output_folder, error_folder)
+            processed_files += 1
+            progress_bar['value'] = (processed_files / total_files) * 100
+            progress_bar.update_idletasks()
+    return processed_files
+
+# GUI con tkinter
+def start_processing():
+    #  * * * * * * * * * * * * * * * *
+    #
+    #
+    #root_path = "G:\Mi unidad\Capacitacion\InSoft\AOMAOSAM\SignReady" # NEED  TO BE CHANGED DEPENDING ON ENVIRONMENT
+    root_path = "s:\Contaduria\InSoft\SignReady"
+
+    input_folder = os.path.join(root_path, "para procesar")
+    input_subfolders = [item for item in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, item))] # fill input_subfolders list
+    decrypted_folder = os.path.join(root_path, "desencriptados")
+    output_folder = os.path.join(root_path, "procesados")
+    error_folder = os.path.join(root_path, "errores")
+
+    # Ensure all folders exist
+    os.makedirs(decrypted_folder, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(error_folder, exist_ok=True)
+    os.makedirs(input_folder, exist_ok=True)
+
+    # Empty the folders
+    empty_folder(decrypted_folder)
+    empty_folder(output_folder)
+    empty_folder(error_folder)
+
+    total_files = sum(1 for f in os.listdir(input_folder) if f.endswith(".pdf"))
+    processed_files = 0
+    for item in input_subfolders:
+        os.makedirs(os.path.join(output_folder, item), exist_ok=True)
+        total_files += sum(1 for f in os.listdir(os.path.join(input_folder, item)) if f.endswith(".pdf"))
+
+    processed_files = process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder, progress_bar, total_files, processed_files)
+
+    for item in input_subfolders:
+        processed_files = process_all_pdfs(os.path.join(input_folder, item), decrypted_folder, os.path.join(output_folder, item), error_folder, progress_bar, total_files, processed_files)
+
+    # Cambiar el texto del botón al finalizar
+    start_button.config(text="Finalizado", command=lambda: app.quit())
 
 
-#  * * * * * * * * * * * * * * * *
-#
-#
-#root_path = "G:\Mi unidad\Capacitacion\InSoft\AOMAOSAM\SignReady" # NEED  TO BE CHANGED DEPENDING ON ENVIRONMENT
-root_path = "z:\Contaduria\InSoft\SignReady"
+# Crear ventana principal
+app = tk.Tk()
+app.title("SignReady")
+app.geometry("400x200")
 
+# Elementos de la interfaz
+tk.Label(app, text="SignReady", font=("Helvetica", 16)).pack(pady=10)
+tk.Label(app, text="Desarrollado por InSoft").pack()
 
-input_folder = os.path.join(root_path, "para procesar")
-input_subfolders = [item for item in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, item))] # fill input_subfolders list
-decrypted_folder = os.path.join(root_path, "desencriptados")
-output_folder = os.path.join(root_path, "procesados")
-error_folder = os.path.join(root_path, "errores")
+progress_bar = ttk.Progressbar(app, orient="horizontal", length=300, mode="determinate")
+progress_bar.pack(pady=20)
 
-# Ensure all folders exist
-os.makedirs(decrypted_folder, exist_ok=True)
-os.makedirs(output_folder, exist_ok=True)
-os.makedirs(error_folder, exist_ok=True)
-os.makedirs(input_folder, exist_ok=True)
+start_button = tk.Button(app, text="Comenzar", command=start_processing)
+start_button.pack(pady=10)
 
-# Empty the folders
-empty_folder(decrypted_folder)
-empty_folder(output_folder)
-empty_folder(error_folder)
-
-for item in input_subfolders:
-    os.makedirs(os.path.join(output_folder, item), exist_ok=True)
-
-
-process_all_pdfs(input_folder, decrypted_folder, output_folder, error_folder)
-
-for item in input_subfolders:
-    process_all_pdfs(os.path.join(input_folder, item), decrypted_folder, os.path.join(output_folder, item), error_folder)
+app.mainloop()
