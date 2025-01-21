@@ -24,10 +24,16 @@ def decrypt_pdf(input_path, decrypted_folder):
             # print(f"Decrypted and saved: {decrypted_path}")
             return decrypted_path
     except pikepdf.PasswordError:
-        print(f"Error: Could not open {input_path} - incorrect password or strong encryption.")
+        # print(f"Error: Could not open {input_path} - incorrect password or strong encryption.")
+        error_message = f"Error: Could not open {input_path} - incorrect password or strong encryption."
+        error_console.insert(tk.END, error_message + "\n")
+        error_console.see(tk.END)
         return None
     except Exception as e:
-        print(f"Error decrypting {input_path}: {e}")
+        # print(f"Error decrypting {input_path}: {e}")
+        error_message = f"Error decrypting {input_path}: {e}"
+        error_console.insert(tk.END, error_message + "\n")
+        error_console.see(tk.END)
         return None
 
 def extract_information(decrypted_path, output_folder, error_folder):
@@ -85,11 +91,17 @@ def extract_information(decrypted_path, output_folder, error_folder):
             output_filename = os.path.basename(decrypted_path)
             output_path = os.path.join(error_folder, output_filename)
             os.rename(decrypted_path, output_path)
-            print(f"Error: {decrypted_path} CUIT: {cuit} Cod: {codigo} Punto de Venta: {punto_venta} Nro Factura: {nro_factura}")
+            # print(f"Error: {decrypted_path} CUIT: {cuit} Cod: {codigo} Punto de Venta: {punto_venta} Nro Factura: {nro_factura}")
+            error_message = f"Error: {decrypted_path} CUIT: {cuit} Cod: {codigo} Punto de Venta: {punto_venta} Nro Factura: {nro_factura}"
+            error_console.insert(tk.END, error_message + "\n")
+            error_console.see(tk.END)
             return None
 
     except Exception as e:
-        print(f"Error extracting information: {e}")
+        # print(f"Error extracting information: {e}")
+        error_message = f"Error extracting information: {e} {decrypted_path}"
+        error_console.insert(tk.END, error_message + "\n")
+        error_console.see(tk.END)
         return None
 
     return output_path
@@ -117,8 +129,8 @@ def start_processing():
     #  * * * * * * * * * * * * * * * *
     #
     #
-    #root_path = "G:\Mi unidad\Capacitacion\InSoft\AOMAOSAM\SignReady" # NEED  TO BE CHANGED DEPENDING ON ENVIRONMENT
-    root_path = "s:\Contaduria\InSoft\SignReady"
+    root_path = "G:\Mi unidad\Capacitacion\InSoft\AOMAOSAM\SignReady" # NEED  TO BE CHANGED DEPENDING ON ENVIRONMENT
+    #root_path = "s:\Contaduria\InSoft\SignReady"
 
     input_folder = os.path.join(root_path, "para procesar")
     input_subfolders = [item for item in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, item))] # fill input_subfolders list
@@ -155,14 +167,22 @@ def start_processing():
 # Crear ventana principal
 app = tk.Tk()
 app.title("SignReady")
-app.geometry("400x200")
+app.geometry("1500x600")
 
 # Elementos de la interfaz
 tk.Label(app, text="SignReady", font=("Helvetica", 16)).pack(pady=10)
 tk.Label(app, text="Desarrollado por InSoft").pack()
 
 progress_bar = ttk.Progressbar(app, orient="horizontal", length=300, mode="determinate")
-progress_bar.pack(pady=20)
+progress_bar.pack(pady=10)
+
+# Consola de errores retro
+error_console_frame = tk.Frame(app, bg="black", bd=2)
+error_console_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+error_console = tk.Text(error_console_frame, bg="black", fg="green", insertbackground="green", font=("Courier", 10), wrap=tk.WORD)
+error_console.pack(fill=tk.BOTH, expand=True)
+
 
 start_button = tk.Button(app, text="Comenzar", command=start_processing)
 start_button.pack(pady=10)
